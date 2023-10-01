@@ -1422,5 +1422,18 @@ library(xgboost)
   
  # Processing the output of the predictions
   predictions<-predict(rbf.xgboost,data,type = 'response')
-  
+#####################################################################################################################
+#####################################The RBF-GFR model with Negative binomial assumption ###################################################
+#####################################################################################################################  
+ # Initialisation & libraries
+library(MASS) 
+ rbf.nb<- glm.nb(data$use~data$food+data$temp+data$I11+data$I12+data$I13+data$I14+data$I15+data$I16+data$I17+data$I18+data$I19+data$I110+
+                            data$I21+data$I22+data$I23+data$I24+data$I25+data$I26+data$I27+data$I28+data$I29+data$I210+
+                            data$x11+data$x12+data$x13+data$x14+data$x15+data$x16+data$x17+data$x18+data$x19+data$x110+
+                            data$x21+data$x22+data$x23+data$x24+data$x25+data$x26+data$x27+data$x28+data$x29+data$x210+
+                            data$y11+data$y12+data$y13+data$y14+data$y15+data$y16+data$y17+data$y18+data$y19+data$y110+
+                            data$temp2+data$N+data$z1+data$z2+data$z3+
+                            data$p21+data$p22+data$p23+data$p24+data$p25+data$p26+data$p27+data$p28+data$p29+data$p210+
+                            data$l11+data$l12+data$l13+data$l14+data$l15+data$l16+data$l17+data$l18+data$l19+data$l110+
+                            data$y21+data$y22+data$y23+data$y24+data$y25+data$y26+data$y27+data$y28+data$y29+data$y210)  
   
