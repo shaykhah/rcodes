@@ -578,8 +578,8 @@ test<-na.omit(habitatDat[!habitatDat$id%in%ids,])
   t.sd5<- max(y[6]-y[5], y[7]-y[6])
   t.sd6<- max(y[7]-y[6],y[8]-y[7])
   t.sd7<- max(y[8]-y[7], y[9]-y[8])
-  t.sd8<- max( y[9]-y[8],y[10],y[9])
-  t.sd9<- max( y[10],y[9], y[11]-y[10])
+  t.sd8<- max( y[9]-y[8],y[10]-y[9])
+  t.sd9<- max( y[10]-y[9], y[11]-y[10])
   t.sd10<- max( y[11]-y[10],y[12]-y[11])
   
   x<- x[2:11]
@@ -1373,7 +1373,7 @@ library(tidyverse)
 
 
   # Processing the output of the predictions
-  predictions<-rbd.cert%>% predict(data)
+  predictions<-rbf.cart%>% predict(data)
   # calculating the out-of-sample score
   1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
 
