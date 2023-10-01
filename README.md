@@ -1316,4 +1316,111 @@ test<-na.omit(habitatDat[!habitatDat$id%in%ids,])
   
   # calculating the out-of-sample score
   1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+
+#####################################################################################################################
+#####################################The Reqularized RBF-GFR model###################################################
+#####################################################################################################################
+#By using the glmnet function in R and using the same previous steps but applying the function glmnet instead of glm as follows
+
+  library(glmnet)
+  reg.rbf<- glmnet(cbind(data$food,data$temp,data$I11,data$I12,data$I13,data$I14,data$I15,data$I16,data$I17,data$I18,data$I19,data$I110,
+                          data$I21,data$I22,data$I23,data$I24,data$I25,data$I26,data$I27,data$I28,data$I29,data$I210,
+                          data$x11,data$x12,data$x13,data$x14,data$x15,data$x16,data$x17,data$x18,data$x19,data$x110,
+                          data$x21,data$x22,data$x23,data$x24,data$x25,data$x26,data$x27,data$x28,data$x29,data$x210,
+                          data$y11,data$y12,data$y13,data$y14,data$y15,data$y16,data$y17,data$y18,data$y19,data$y110,
+                          data$temp2,data$N,data$z1,data$z2,data$z3,
+                          data$p21,data$p22,data$p23,data$p24,data$p25,data$p26,data$p27,data$p28,data$p29,data$p210,
+                          data$l11,data$l12,data$l13,data$l14,data$l15,data$l16,data$l17,data$l18,data$l19,data$l110,
+                          data$y21,data$y22,data$y23,data$y24,data$y25,data$y26,data$y27,data$y28,data$y29,data$y210)
+                    ,c(data$use),alpha=0,family = poisson)
+  tLL <- reg.rbf$nulldev - deviance(reg.rbf)
+  k <- reg.rbf$df
+  n <- reg.rbf$nobs
+  BIC<-log(n)*k - tLL
+# Processing the output of the predictions is similar to the RBF-GFR but includes the following
+x<-cbind(data$food,data$temp,data$I11,data$I12,data$I13,data$I14,data$I15,data$I16,data$I17,data$I18,data$I19,data$I110,
+                          data$I21,data$I22,data$I23,data$I24,data$I25,data$I26,data$I27,data$I28,data$I29,data$I210,
+                          data$x11,data$x12,data$x13,data$x14,data$x15,data$x16,data$x17,data$x18,data$x19,data$x110,
+                          data$x21,data$x22,data$x23,data$x24,data$x25,data$x26,data$x27,data$x28,data$x29,data$x210,
+                          data$y11,data$y12,data$y13,data$y14,data$y15,data$y16,data$y17,data$y18,data$y19,data$y110,
+                          data$temp2,data$N,data$z1,data$z2,data$z3,
+                          data$p21,data$p22,data$p23,data$p24,data$p25,data$p26,data$p27,data$p28,data$p29,data$p210,
+                          data$l11,data$l12,data$l13,data$l14,data$l15,data$l16,data$l17,data$l18,data$l19,data$l110,
+                          data$y21,data$y22,data$y23,data$y24,data$y25,data$y26,data$y27,data$y28,data$y29,data$y210)
+  predictions<-predict(reg.rbf,type = 'response', newx =  x)
+  predictions<-predictions[,which.min(BIC)]
+  
+  # calculating the out-of-sample score
+  1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+
+#####################################################################################################################
+#####################################The RBF-GFR-CART model###################################################
+#####################################################################################################################
+  #By using the rpart function in R and using the same previous steps follows
+
+ # Initialisation & libraries
+library(part) 
+library(tidyverse)
+  rbf.cart<- rpart(data$use~data$food+data$temp+data$I11+data$I12+data$I13+data$I14+data$I15+data$I16+data$I17+data$I18+data$I19+data$I110+
+                            data$I21+data$I22+data$I23+data$I24+data$I25+data$I26+data$I27+data$I28+data$I29+data$I210+
+                            data$x11+data$x12+data$x13+data$x14+data$x15+data$x16+data$x17+data$x18+data$x19+data$x110+
+                            data$x21+data$x22+data$x23+data$x24+data$x25+data$x26+data$x27+data$x28+data$x29+data$x210+
+                            data$y11+data$y12+data$y13+data$y14+data$y15+data$y16+data$y17+data$y18+data$y19+data$y110+
+                            data$temp2+data$N+data$z1+data$z2+data$z3+
+                            data$p21+data$p22+data$p23+data$p24+data$p25+data$p26+data$p27+data$p28+data$p29+data$p210+
+                            data$l11+data$l12+data$l13+data$l14+data$l15+data$l16+data$l17+data$l18+data$l19+data$l110+
+                            data$y21+data$y22+data$y23+data$y24+data$y25+data$y26+data$y27+data$y28+data$y29+data$y210)
+
+
+  # Processing the output of the predictions
+  predictions<-rbd.cert%>% predict(data)
+  # calculating the out-of-sample score
+  1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+
+#####################################################################################################################
+#####################################The RBF-GFR-RF model###################################################
+#####################################################################################################################  
+ # Initialisation & libraries
+library(randomForest) 
+ rbf.rf<- randomForest(data$use~data$food+data$temp+data$I11+data$I12+data$I13+data$I14+data$I15+data$I16+data$I17+data$I18+data$I19+data$I110+
+                            data$I21+data$I22+data$I23+data$I24+data$I25+data$I26+data$I27+data$I28+data$I29+data$I210+
+                            data$x11+data$x12+data$x13+data$x14+data$x15+data$x16+data$x17+data$x18+data$x19+data$x110+
+                            data$x21+data$x22+data$x23+data$x24+data$x25+data$x26+data$x27+data$x28+data$x29+data$x210+
+                            data$y11+data$y12+data$y13+data$y14+data$y15+data$y16+data$y17+data$y18+data$y19+data$y110+
+                            data$temp2+data$N+data$z1+data$z2+data$z3+
+                            data$p21+data$p22+data$p23+data$p24+data$p25+data$p26+data$p27+data$p28+data$p29+data$p210+
+                            data$l11+data$l12+data$l13+data$l14+data$l15+data$l16+data$l17+data$l18+data$l19+data$l110+
+                            data$y21+data$y22+data$y23+data$y24+data$y25+data$y26+data$y27+data$y28+data$y29+data$y210,
+                            family = poisson, ntree=15)
+
+ # Processing the output of the predictions 
+  predictions<-predict.glm(rbf.rf,type = 'response',test)
+  predictions<- pmax(predictions, 0.001)
+  
+  # calculating the out-of-sample score
+  1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+#####################################################################################################################
+#####################################The RBF-GFR-XGBoost model###################################################
+#####################################################################################################################
+ # Initialisation & libraries
+library(xgboost)
+
+  # Preparaing the data
+ lab<- data$use
+  data<- data.matrix(data[,c('food','temp','I11','I12','I13','I14','I15','I16','I17','I18','I19','I110',
+                                         'I21','I22','I23','I24','I25','I26','I27','I28','I29','I210',
+                                         'x11','x12','x13','x14','x15','x16','x17','x18','x19','x110',
+                                         'x21','x22','x23','x24','x25','x26','x27','x28','x29','x210',
+                                         'y11','y12','y13','y14','y15','y16','y17','y18','y19','y110',
+                                         'temp2','N','z1','z2','z3', 'p21','p22','p23','p24','p25','p26',
+                                         'p27','p28','p29','p210', 'l11','l12','l13','l14','l15','l16',
+                                         'l17','l18','l19','l110','y21','y22','y23','y24','y25','y26','y27'
+                                         ,'y28','y29','y210')])
+ data = xgb.DMatrix(data = data, label = lab)  
+  set.seed(123)
+  rbf.xgboost<- xgboost(data = data,  objective='count:poisson', nrounds = 500)
+  
+ # Processing the output of the predictions
+  predictions<-predict(rbf.xgboost,data,type = 'response')
+  
   
