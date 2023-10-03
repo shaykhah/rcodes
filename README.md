@@ -522,8 +522,90 @@ gfr_predict <- gfr.predict(list_of_outputs$model, test,
 # Processing the output of the prediction function to generate output file
 predictions<- as.data.frame(gfr_predict[[1]])
 
-# calculating the out-of-sample score
+# calculating the out-of-sample R2 score
 R2<- 1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+
+##########################################################################################################################################
+############################### Training and predicting of the RBF-GFR model using the RBF-GFR function and 10-fold cross-validation ##########
+##########################################################################################################################################
+# libraries
+require(groupdata2)
+# Assign formula, use variable names (food & temperature)
+par_formula <- use ~food + temp
+
+# Define the likelihood function to be used for fitting
+par_family <- poisson
+
+# name of the variable for blocking id, just name
+par_block_id <- 'id'
+
+# Additional variable to be considered in
+par_addexp <- 'N'
+
+# It is the order of model
+par_basis<- 1
+
+# to apply stepwise model selection
+par_step <- FALSE
+
+par_offset <- NULL
+
+par_expFlag <- NULL
+
+# number of basis functions
+par_Iij_order <- 10
+
+# Set the parameter to involve temp_sqaure term in the calculation, set FALSE to exclude
+temp_sqr_term <- TRUE
+# The number of Gaussian components to be used for the approximating mixture
+par_G <- 9
+# preparing the data
+habitatDat<-habitatDat[order(habitatDat$id),]
+set.seed(123)
+habitatDat<-fold(habitatDat,k=10,id_col = 'id')
+habitatDat<-habitatDat[order(habitatDat$id),]
+
+# vector to store the R2 scores for the 10-folds
+r2<- rep(0,10)
+
+# train and test for 10-folds
+for(ii in 1:10){
+  
+  train<- subset(habitatDat,!habitatDat$.folds==ii)
+  
+  test<- subset(habitatDat, habitatDat$.folds==ii)
+  
+  #####################################################
+  #######################
+  # assign dataset,
+  par_data <- train
+  list_of_outputs <- rbf_gfr(par_formula,   par_data,      par_family,
+                             par_block_id,  par_expFlag,   par_addexp,
+                             par_basis,     par_step,      par_offset,
+                             par_Iij_order, temp_sqr_term, par_G)
+  
+  
+  list_of_outputs$model
+  
+  
+  ############################### Prediction Function Call ##############################
+  
+  gfr_predict <- gfr.predict(list_of_outputs$model, test,
+                             "response", se.fit,
+                             list_of_outputs$quantiles, list_of_outputs$formula,
+                             list_of_outputs$order, list_of_outputs$addexp)
+  
+  # Processing the output of the prediction function to generate the output file
+  predictions<- as.data.frame(gfr_predict[[1]])
+  
+  # calculating the out-of-sample score
+  r2[ii]<- 1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+  
+  
+}
+# calculating the median of out-of-sample R2 scores of 10-folds
+median(r2)
+
 
 
 ################################################################################################################################
@@ -533,18 +615,29 @@ R2<- 1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
 
 # Initialisation & libraries
 require(HATOPO)
+require(groupdata2)
 
 # Order data by id
 habitatDat<-habitatDat[order(habitatDat$id),]  
 
-# Create a training data set
+# Create 10-folds and ordering the data
 set.seed(123)
-ids<-sample(as.numeric(unique(habitatDat$id)),360)
-train<-na.omit(habitatDat[habitatDat$id%in%ids,])
-# Create a testing data set
-test<-na.omit(habitatDat[!habitatDat$id%in%ids,])
+habitatDat<-fold(habitatDat,k=10,id_col = 'id')
+habitatDat<-habitatDat[order(habitatDat$id),]
 
-  #######################
+
+  # vector to store the R2 scores for the 10-folds
+r2<- rep(0,10)
+
+# train and test for 10-folds
+for(ii in 1:10){
+  
+  train<- subset(habitatDat,!habitatDat$.folds==ii)
+  
+  test<- subset(habitatDat, habitatDat$.folds==ii)
+
+
+  #################
   data<- as.data.frame(train)
   #extract the main variables
   food.data<- subset.data.frame(data,select=c(food))
@@ -1315,7 +1408,13 @@ test<-na.omit(habitatDat[!habitatDat$id%in%ids,])
   predictions<- pmax(predictions, 0.001)
   
   # calculating the out-of-sample score
-  1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+  r2[ii]<- 1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+  
+  
+}
+# calculating the median of out-of-sample R2 scores of 10-folds
+median(r2)
+
 
 #####################################################################################################################
 #####################################The Reqularized RBF-GFR model###################################################
