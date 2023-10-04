@@ -22,13 +22,11 @@
 #' @return \code{I_{i,j}} The calculated I from the data
 #' @return \code{order} The requested number of basis function
 #' @return \code{formula} The basic formula (not containing interactions)
-#' @export
-#
 #' @seealso {gfr} in HATOPO library
+
 #######################################################################################
 # Part 1: Training of model using the RBF-GFR function
 #######################################################################################
-
 
 rbf_gfr<-function(formula, data, family, blockName, expFlag=NULL, addexp,
                   order=1, step=FALSE, offset=NULL, Iij_order, temp_sqr_term, g)
