@@ -1415,11 +1415,406 @@ for(ii in 1:10){
 # calculating the median of out-of-sample R2 scores of 10-folds
 median(r2)
 
+#####################################################################################################################
+#####################################The Original GFR model (gfr function)###########################################
+#####################################################################################################################
+# The original GFR model using the gunction GFR in HATOPO package 
+# Initialisation & libraries
+library(HATOPO)
+# preparing the data
+habitatDat<-habitatDat[order(habitatDat$id),]
+set.seed(123)
+habitatDat<-fold(habitatDat,k=10,id_col = 'id')
+habitatDat<-habitatDat[order(habitatDat$id),]
 
+# A formula involving the main effects
+formula<-use~food+temp+I(temp^2)
+
+# the names of the instance-specific covariates
+addexp="N"
+
+# vector to store the R2 scores for the 10-folds
+r2<- rep(0,10)
+
+# train and test for 10-folds
+for(ii in 1:10){
+
+  train<- subset(habitatDat,!habitatDat$.folds==ii)
+
+  test<- subset(habitatDat, habitatDat$.folds==ii)
+
+  #####################################################
+
+  # The gfrModel can now be fit to the habitatDat. 
+  gfrModel<-gfr(formula=formula,
+                data=train, family=poisson, order=10, addexp=addexp,
+                block="id", step=FALSE)
+
+
+  ############################### Prediction Function Call ##############################
+
+  predictions<-gfr.predict(gfrModel,type = 'response', test, se.fit = FALSE)
+  predictions<-predictions$predictions
+
+  # calculating the out-of-sample score
+  r2[ii]<- 1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+
+
+}
+# calculating the median of out-of-sample R2 scores of 10-folds
+median(r2)
+
+#####################################################################################################################
+#####################################The Original GFR model (step-by-step code)#######################################
+#####################################################################################################################
+# The original GFR model using the gunction GFR in HATOPO package 
+# Initialisation & libraries
+
+library(HATOPO)
+library(groupdata2)
+# Order data by id
+habitatDat<-habitatDat[order(habitatDat$id),]  
+
+# Create 10-folds and ordering the data
+set.seed(123)
+habitatDat<-fold(habitatDat,k=10,id_col = 'id')
+habitatDat<-habitatDat[order(habitatDat$id),]
+
+
+# vector to store the R2 scores for the 10-folds
+r2<- rep(0,10)
+
+# train and test for 10-folds
+for(ii in 1:10){
+
+  train<- subset(habitatDat,!habitatDat$.folds==ii)
+
+  test<- subset(habitatDat, habitatDat$.folds==ii)
+
+
+  #################
+  data<- as.data.frame(train)
+  #Create the variables' moments
+  data<-data[order(data$id),]
+  data$food2<- (data$food)^2
+  data$food3<- (data$food)^3
+  data$food4<- (data$food)^4
+  data$food5<- (data$food)^5
+  data$food6<- (data$food)^6
+  data$food7<- (data$food)^7
+  data$food8<- (data$food)^8
+  data$food9<- (data$food)^9
+  data$food10<- (data$food)^10
+
+  data$temp2<- (data$temp)^2
+  data$temp3<- (data$temp)^3
+  data$temp4<- (data$temp)^4
+  data$temp5<- (data$temp)^5
+  data$temp6<- (data$temp)^6
+  data$temp7<- (data$temp)^7
+  data$temp8<- (data$temp)^8
+  data$temp9<- (data$temp)^9
+  data$temp10<- (data$temp)^10
+
+
+  s11<- na.omit(matrix(tapply(data$food,data$id, mean)))
+  s12<- na.omit(matrix(tapply(data$food2,data$id, mean)))
+  s13<- na.omit(matrix(tapply(data$food3,data$id, mean)))
+  s14<- na.omit(matrix(tapply(data$food4,data$id, mean)))
+  s15<- na.omit(matrix(tapply(data$food5,data$id, mean)))
+  s16<- na.omit(matrix(tapply(data$food6,data$id, mean)))
+  s17<- na.omit(matrix(tapply(data$food7,data$id, mean)))
+  s18<- na.omit(matrix(tapply(data$food8,data$id, mean)))
+  s19<- na.omit(matrix(tapply(data$food9,data$id, mean)))
+  s110<- na.omit(matrix(tapply(data$food10,data$id, mean)))
+
+
+  s21<- na.omit(matrix(tapply(data$temp,data$id, mean)))
+  s22<- na.omit(matrix(tapply(data$temp2,data$id, mean)))
+  s23<- na.omit(matrix(tapply(data$temp3,data$id, mean)))
+  s24<- na.omit(matrix(tapply(data$temp4,data$id, mean)))
+  s25<- na.omit(matrix(tapply(data$temp5,data$id, mean)))
+  s26<- na.omit(matrix(tapply(data$temp6,data$id, mean)))
+  s27<- na.omit(matrix(tapply(data$temp7,data$id, mean)))
+  s28<- na.omit(matrix(tapply(data$temp8,data$id, mean)))
+  s29<- na.omit(matrix(tapply(data$temp9,data$id, mean)))
+  s210<- na.omit(matrix(tapply(data$temp10,data$id, mean)))
+
+
+  ### Creat columns I11,I12, ....
+  data$I11<- c(rep(c(s11[1:length(s11)]), each=500))
+  data$I12<- c(rep(c(s12[1:length(s11)]), each=500))
+  data$I13<- c(rep(c(s13[1:length(s11)]), each=500))
+  data$I14<- c(rep(c(s14[1:length(s11)]), each=500))
+  data$I15<- c(rep(c(s15[1:length(s11)]), each=500))
+  data$I16<- c(rep(c(s16[1:length(s11)]), each=500))
+  data$I17<- c(rep(c(s17[1:length(s11)]), each=500))
+  data$I18<- c(rep(c(s18[1:length(s11)]), each=500))
+  data$I19<- c(rep(c(s19[1:length(s11)]), each=500))
+  data$I110<- c(rep(c(s110[1:length(s11)]), each=500))
+
+
+  data$I21<- c(rep(c(s21[1:length(s11)]), each=500))
+  data$I22<- c(rep(c(s22[1:length(s11)]), each=500))
+  data$I23<- c(rep(c(s23[1:length(s11)]), each=500))
+  data$I24<- c(rep(c(s24[1:length(s11)]), each=500))
+  data$I25<- c(rep(c(s25[1:length(s11)]), each=500))
+  data$I26<- c(rep(c(s26[1:length(s11)]), each=500))
+  data$I27<- c(rep(c(s27[1:length(s11)]), each=500))
+  data$I28<- c(rep(c(s28[1:length(s11)]), each=500))
+  data$I29<- c(rep(c(s29[1:length(s11)]), each=500))
+  data$I210<- c(rep(c(s210[1:length(s11)]), each=500))
+  data$temp2<- data$temp^2
+
+  #Interaction Terms
+  data$x11<- data$food*data$I11
+  data$x12<- data$food*data$I12
+  data$x13<- data$food*data$I13
+  data$x14<- data$food*data$I14
+  data$x15<- data$food*data$I15
+  data$x16<- data$food*data$I16
+  data$x17<- data$food*data$I17
+  data$x18<- data$food*data$I18
+  data$x19<- data$food*data$I19
+  data$x110<- data$food*data$I110
+
+  data$x21<- data$temp*data$I21
+  data$x22<- data$temp*data$I22
+  data$x23<- data$temp*data$I23
+  data$x24<- data$temp*data$I24
+  data$x25<- data$temp*data$I25
+  data$x26<- data$temp*data$I26
+  data$x27<- data$temp*data$I27
+  data$x28<- data$temp*data$I28
+  data$x29<- data$temp*data$I29
+  data$x210<- data$temp*data$I210
+
+  data$y11<- data$temp*data$I11
+  data$y12<- data$temp*data$I12
+  data$y13<- data$temp*data$I13
+  data$y14<- data$temp*data$I14
+  data$y15<- data$temp*data$I15
+  data$y16<- data$temp*data$I16
+  data$y17<- data$temp*data$I17
+  data$y18<- data$temp*data$I18
+  data$y19<- data$temp*data$I19
+  data$y110<- data$temp*data$I110
+
+  data$y21<- data$food*data$I21
+  data$y22<- data$food*data$I22
+  data$y23<- data$food*data$I23
+  data$y24<- data$food*data$I24
+  data$y25<- data$food*data$I25
+  data$y26<- data$food*data$I26
+  data$y27<- data$food*data$I27
+  data$y28<- data$food*data$I28
+  data$y29<- data$food*data$I29
+  data$y210<- data$food*data$I210
+
+  data$p21<- data$temp2*data$I21
+  data$p22<- data$temp2*data$I22
+  data$p23<- data$temp2*data$I23
+  data$p24<- data$temp2*data$I24
+  data$p25<- data$temp2*data$I25
+  data$p26<- data$temp2*data$I26
+  data$p27<- data$temp2*data$I27
+  data$p28<- data$temp2*data$I28
+  data$p29<- data$temp2*data$I29
+  data$p210<- data$temp2*data$I210
+
+  data$l11<- data$temp2*data$I11
+  data$l12<- data$temp2*data$I12
+  data$l13<- data$temp2*data$I13
+  data$l14<- data$temp2*data$I14
+  data$l15<- data$temp2*data$I15
+  data$l16<- data$temp2*data$I16
+  data$l17<- data$temp2*data$I17
+  data$l18<- data$temp2*data$I18
+  data$l19<- data$temp2*data$I19
+  data$l110<- data$temp2*data$I110
+
+  data$z1<- data$food*data$N
+  data$z2<- data$temp*data$N
+  data$z3<- data$temp2*data$N
+
+
+  #### Model fitting and selection
+  gfr<- glm(data$use~data$food+data$temp+data$I11+data$I12+data$I13+data$I14+data$I15+data$I16+data$I17+data$I18+data$I19+data$I110+
+                  data$I21+data$I22+data$I23+data$I24+data$I25+data$I26+data$I27+data$I28+data$I29+data$I210+
+                  data$x11+data$x12+data$x13+data$x14+data$x15+data$x16+data$x17+data$x18+data$x19+data$x110+
+                  data$x21+data$x22+data$x23+data$x24+data$x25+data$x26+data$x27+data$x28+data$x29+data$x210+
+                  data$y11+data$y12+data$y13+data$y14+data$y15+data$y16+data$y17+data$y18+data$y19+data$y110+
+                  data$temp2+data$N+data$z1+data$z2+data$z3+
+                  data$p21+data$p22+data$p23+data$p24+data$p25+data$p26+data$p27+data$p28+data$p29+data$p210+
+                  data$l11+data$l12+data$l13+data$l14+data$l15+data$l16+data$l17+data$l18+data$l19+data$l110+
+                  data$y21+data$y22+data$y23+data$y24+data$y25+data$y26+data$y27+data$y28+data$y29+data$y210,
+                family = poisson)
+
+
+  #######################################################################################
+  # Part 2:  Prediction using the trained RBF-GFR model
+  #######################################################################################
+  data<- as.data.frame(test)
+  data<-data[order(data$id),]
+  #Create the variables' moments
+  data<-data[order(data$id),]
+  data$food2<- (data$food)^2
+  data$food3<- (data$food)^3
+  data$food4<- (data$food)^4
+  data$food5<- (data$food)^5
+  data$food6<- (data$food)^6
+  data$food7<- (data$food)^7
+  data$food8<- (data$food)^8
+  data$food9<- (data$food)^9
+  data$food10<- (data$food)^10
+
+  data$temp2<- (data$temp)^2
+  data$temp3<- (data$temp)^3
+  data$temp4<- (data$temp)^4
+  data$temp5<- (data$temp)^5
+  data$temp6<- (data$temp)^6
+  data$temp7<- (data$temp)^7
+  data$temp8<- (data$temp)^8
+  data$temp9<- (data$temp)^9
+  data$temp10<- (data$temp)^10
+
+
+
+  s11<- na.omit(matrix(tapply(data$food,data$id, mean)))
+  s12<- na.omit(matrix(tapply(data$food2,data$id, mean)))
+  s13<- na.omit(matrix(tapply(data$food3,data$id, mean)))
+  s14<- na.omit(matrix(tapply(data$food4,data$id, mean)))
+  s15<- na.omit(matrix(tapply(data$food5,data$id, mean)))
+  s16<- na.omit(matrix(tapply(data$food6,data$id, mean)))
+  s17<- na.omit(matrix(tapply(data$food7,data$id, mean)))
+  s18<- na.omit(matrix(tapply(data$food8,data$id, mean)))
+  s19<- na.omit(matrix(tapply(data$food9,data$id, mean)))
+  s110<- na.omit(matrix(tapply(data$food10,data$id, mean)))
+
+
+  s21<- na.omit(matrix(tapply(data$temp,data$id, mean)))
+  s22<- na.omit(matrix(tapply(data$temp2,data$id, mean)))
+  s23<- na.omit(matrix(tapply(data$temp3,data$id, mean)))
+  s24<- na.omit(matrix(tapply(data$temp4,data$id, mean)))
+  s25<- na.omit(matrix(tapply(data$temp5,data$id, mean)))
+  s26<- na.omit(matrix(tapply(data$temp6,data$id, mean)))
+  s27<- na.omit(matrix(tapply(data$temp7,data$id, mean)))
+  s28<- na.omit(matrix(tapply(data$temp8,data$id, mean)))
+  s29<- na.omit(matrix(tapply(data$temp9,data$id, mean)))
+  s210<- na.omit(matrix(tapply(data$temp10,data$id, mean)))
+
+  ### Creat columns I11,I12, ....
+  data$I11<- c(rep(c(s11[1:length(s11)]), each=500))
+  data$I12<- c(rep(c(s12[1:length(s11)]), each=500))
+  data$I13<- c(rep(c(s13[1:length(s11)]), each=500))
+  data$I14<- c(rep(c(s14[1:length(s11)]), each=500))
+  data$I15<- c(rep(c(s15[1:length(s11)]), each=500))
+  data$I16<- c(rep(c(s16[1:length(s11)]), each=500))
+  data$I17<- c(rep(c(s17[1:length(s11)]), each=500))
+  data$I18<- c(rep(c(s18[1:length(s11)]), each=500))
+  data$I19<- c(rep(c(s19[1:length(s11)]), each=500))
+  data$I110<- c(rep(c(s110[1:length(s11)]), each=500))
+
+
+  data$I21<- c(rep(c(s21[1:length(s11)]), each=500))
+  data$I22<- c(rep(c(s22[1:length(s11)]), each=500))
+  data$I23<- c(rep(c(s23[1:length(s11)]), each=500))
+  data$I24<- c(rep(c(s24[1:length(s11)]), each=500))
+  data$I25<- c(rep(c(s25[1:length(s11)]), each=500))
+  data$I26<- c(rep(c(s26[1:length(s11)]), each=500))
+  data$I27<- c(rep(c(s27[1:length(s11)]), each=500))
+  data$I28<- c(rep(c(s28[1:length(s11)]), each=500))
+  data$I29<- c(rep(c(s29[1:length(s11)]), each=500))
+  data$I210<- c(rep(c(s210[1:length(s11)]), each=500))
+  data$temp2<- data$temp^2
+
+  #Interaction Terms
+  data$x11<- data$food*data$I11
+  data$x12<- data$food*data$I12
+  data$x13<- data$food*data$I13
+  data$x14<- data$food*data$I14
+  data$x15<- data$food*data$I15
+  data$x16<- data$food*data$I16
+  data$x17<- data$food*data$I17
+  data$x18<- data$food*data$I18
+  data$x19<- data$food*data$I19
+  data$x110<- data$food*data$I110
+
+  data$x21<- data$temp*data$I21
+  data$x22<- data$temp*data$I22
+  data$x23<- data$temp*data$I23
+  data$x24<- data$temp*data$I24
+  data$x25<- data$temp*data$I25
+  data$x26<- data$temp*data$I26
+  data$x27<- data$temp*data$I27
+  data$x28<- data$temp*data$I28
+  data$x29<- data$temp*data$I29
+  data$x210<- data$temp*data$I210
+
+  data$y11<- data$temp*data$I11
+  data$y12<- data$temp*data$I12
+  data$y13<- data$temp*data$I13
+  data$y14<- data$temp*data$I14
+  data$y15<- data$temp*data$I15
+  data$y16<- data$temp*data$I16
+  data$y17<- data$temp*data$I17
+  data$y18<- data$temp*data$I18
+  data$y19<- data$temp*data$I19
+  data$y110<- data$temp*data$I110
+
+  data$y21<- data$food*data$I21
+  data$y22<- data$food*data$I22
+  data$y23<- data$food*data$I23
+  data$y24<- data$food*data$I24
+  data$y25<- data$food*data$I25
+  data$y26<- data$food*data$I26
+  data$y27<- data$food*data$I27
+  data$y28<- data$food*data$I28
+  data$y29<- data$food*data$I29
+  data$y210<- data$food*data$I210
+
+  data$p21<- data$temp2*data$I21
+  data$p22<- data$temp2*data$I22
+  data$p23<- data$temp2*data$I23
+  data$p24<- data$temp2*data$I24
+  data$p25<- data$temp2*data$I25
+  data$p26<- data$temp2*data$I26
+  data$p27<- data$temp2*data$I27
+  data$p28<- data$temp2*data$I28
+  data$p29<- data$temp2*data$I29
+  data$p210<- data$temp2*data$I210
+
+  data$l11<- data$temp2*data$I11
+  data$l12<- data$temp2*data$I12
+  data$l13<- data$temp2*data$I13
+  data$l14<- data$temp2*data$I14
+  data$l15<- data$temp2*data$I15
+  data$l16<- data$temp2*data$I16
+  data$l17<- data$temp2*data$I17
+  data$l18<- data$temp2*data$I18
+  data$l19<- data$temp2*data$I19
+  data$l110<- data$temp2*data$I110
+
+  data$z1<- data$food*data$N
+  data$z2<- data$temp*data$N
+  data$z3<- data$temp2*data$N
+
+
+  # Processing the output of the predictions 
+  predictions<-predict.glm(gfr,type = 'response',test)
+  predictions<- pmax(predictions, 0.001)
+
+  # calculating the out-of-sample score
+  r2[ii]<- 1 - (sum((test$use - predictions)^2)/sum((test$use - mean(test$use))^2))
+
+
+}
+# calculating the median of out-of-sample R2 scores of 10-folds
+median(r2)
 #####################################################################################################################
 #####################################The Reqularized RBF-GFR model###################################################
 #####################################################################################################################
-#By using the glmnet function in R and using the same previous steps but applying the function glmnet instead of glm as follows
+# By using the glmnet function in R and using the same previous steps but applying the function glmnet instead of glm as follows
 
   library(glmnet)
   reg.rbf<- glmnet(cbind(data$food,data$temp,data$I11,data$I12,data$I13,data$I14,data$I15,data$I16,data$I17,data$I18,data$I19,data$I110,
