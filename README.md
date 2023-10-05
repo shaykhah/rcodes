@@ -1896,7 +1896,6 @@ library(randomForest)
 #####################################################################################################################
  # Initialisation & libraries
 library(xgboost)
-
   # Preparaing the data
  lab<- data$use
   data<- data.matrix(data[,c('food','temp','I11','I12','I13','I14','I15','I16','I17','I18','I19','I110',
