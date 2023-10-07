@@ -1927,4 +1927,4 @@ library(MASS)
                             data$p21+data$p22+data$p23+data$p24+data$p25+data$p26+data$p27+data$p28+data$p29+data$p210+
                             data$l11+data$l12+data$l13+data$l14+data$l15+data$l16+data$l17+data$l18+data$l19+data$l110+
                             data$y21+data$y22+data$y23+data$y24+data$y25+data$y26+data$y27+data$y28+data$y29+data$y210)  
-  
+#####################################################################################################################  
