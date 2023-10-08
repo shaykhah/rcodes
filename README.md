@@ -730,6 +730,7 @@ for(ii in 1:10){
     c2
   }
 
+
   #### Matrix of weight of the mixture Gaussian approximation  
   ### weight for all component for each block
  
