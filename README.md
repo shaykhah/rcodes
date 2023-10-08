@@ -1914,7 +1914,7 @@ library(xgboost)
  # Processing the output of the predictions
   predictions<-predict(rbf.xgboost,data,type = 'response')
 #####################################################################################################################
-#####################################The RBF-GFR model with Negative binomial assumption ###################################################
+#####################################The RBF-GFR model with Negative binomial assumption ############################
 #####################################################################################################################  
  # Initialisation & libraries
 library(MASS) 
